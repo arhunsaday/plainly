@@ -1,7 +1,7 @@
 {
-  "name": "better-copy-paste",
-  "version": "0.0.1",
-  "description": "Copy and paste text without formatting, or as clean HTML or Markdown.",
+  "name": "plainly",
+  "version": "1.0.0",
+  "description": "Plainly - copy and paste text without formatting, or as clean HTML or Markdown.",
   "license": "MIT",
   "private": true,
   "packageManager": "pnpm@11.18.0",
@@ -24,7 +24,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "verify": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build:all && pnpm run check:injected"
+    "verify": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build:all && pnpm run check:injected",
+    "brand": "node scripts/brand.mjs",
+    "store-assets": "node scripts/store-assets.mjs"
   },
   "type": "module",
   "dependencies": {
@@ -65,5 +67,10 @@
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
     "vitest": "^2.1.9"
+  },
+  "homepage": "https://github.com/Jeusto/copy-paste-without-formatting",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jeusto/copy-paste-without-formatting.git"
   }
 }

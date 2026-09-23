@@ -25,7 +25,7 @@ const INJECTED = {
   readSelection: "commonAncestorContainer",
   insertText: "no-target",
   probeTarget: "hasTarget:",
-  showToast: "bcp-toast-host",
+  showToast: "plainly-toast-host",
 };
 
 const GLOBALS = new Set([

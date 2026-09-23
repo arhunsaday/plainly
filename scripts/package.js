@@ -15,9 +15,9 @@ if (!browser || !["chrome", "firefox"].includes(browser)) {
 
 const isFirefox = browser === "firefox";
 const srcDir = isFirefox ? "dist-firefox" : "dist";
-const ext = isFirefox ? "xpi" : "zip";
+const ext = "zip";
 const outputDir = resolve(rootDir, "releases");
-const outputFile = `better-copy-paste-${browser}-v${pkg.version}.${ext}`;
+const outputFile = `plainly-${browser}-v${pkg.version}.${ext}`;
 const outputPath = resolve(outputDir, outputFile);
 
 if (!existsSync(outputDir)) {

@@ -8,6 +8,7 @@ import { runInAllFrames, runInFrame, type FrameResult } from "./inject-runner";
 import { ACTION_LABELS, type ActionId, type ActionOutcome, type MarkdownOptions } from "./messages";
 import { toPlainText } from "./plain-text";
 import { restrictionFor } from "./restricted";
+import { cleanUrlsInHtml, cleanUrlsInText } from "./urls";
 import { getSettings } from "./settings-store";
 import type { Settings } from "./settings";
 
@@ -91,7 +92,10 @@ async function copyAction(
     const written = await runInDomContext({
       kind: "clipboard-write",
       text: toPlainText(text, { ...settings, collapseNewlines: false, collapseSpaces: false }),
-      html,
+      // Link hygiene belongs on every flavour, not just the plain one. It is
+      // applied here rather than in readSelection because that function is
+      // serialised into the page and has to stay self-contained.
+      html: settings.stripTracking ? cleanUrlsInHtml(html) : html,
     });
     return written.ok
       ? { ok: true, message: "Copied with clean formatting." }
@@ -100,13 +104,15 @@ async function copyAction(
 
   const converted = await runInDomContext({
     kind: "html-to-markdown",
-    html,
+    html: settings.stripTracking ? cleanUrlsInHtml(html) : html,
     options: markdownOptions(settings),
   });
   if (!converted.ok) return { ok: false, message: converted.error };
   if (!converted.value) return { ok: false, message: "That selection produced no Markdown." };
 
-  const written = await runInDomContext({ kind: "clipboard-write", text: converted.value });
+  // Turndown can emit a bare autolink that never passed through an href.
+  const markdown = settings.stripTracking ? cleanUrlsInText(converted.value) : converted.value;
+  const written = await runInDomContext({ kind: "clipboard-write", text: markdown });
   return written.ok
     ? { ok: true, message: "Copied as Markdown." }
     : { ok: false, message: written.error };

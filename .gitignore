@@ -391,4 +391,4 @@ dist
 dist-firefox
 
 # packaged releases
-releases
+releases/

@@ -28,6 +28,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The committed PNGs are generated. If the generator and the committed
+      # output disagree, the store icons and the repo have already drifted.
+      - name: Brand assets are up to date
+        run: |
+          pnpm run brand
+          git diff --exit-code -- public brand
+
       - name: Typecheck
         run: pnpm run typecheck
 
@@ -48,11 +55,11 @@ jobs:
       - name: Upload Chrome build
         uses: actions/upload-artifact@v4
         with:
-          name: better-copy-paste-chrome
+          name: plainly-chrome
           path: dist
 
       - name: Upload Firefox build
         uses: actions/upload-artifact@v4
         with:
-          name: better-copy-paste-firefox
+          name: plainly-firefox
           path: dist-firefox

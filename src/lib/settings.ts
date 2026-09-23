@@ -7,6 +7,12 @@ export type Settings = {
   collapseNewlines: boolean;
   collapseSpaces: boolean;
   trimResult: boolean;
+  /** Replace curly quotes, ellipses and figure dashes with ASCII */
+  straightenQuotes: boolean;
+  /** Rejoin lines a PDF or plain-text email wrapped mid-sentence */
+  rejoinWrappedLines: boolean;
+  /** Remove utm_*, gclid, fbclid and friends from copied links */
+  stripTracking: boolean;
 
   /** What survives "clean formatting" and Markdown conversion */
   keepEmphasis: boolean;
@@ -38,6 +44,9 @@ export const DEFAULT_SETTINGS: Settings = {
   collapseNewlines: true,
   collapseSpaces: true,
   trimResult: true,
+  straightenQuotes: false,
+  rejoinWrappedLines: false,
+  stripTracking: true,
 
   keepEmphasis: true,
   keepHeadings: true,

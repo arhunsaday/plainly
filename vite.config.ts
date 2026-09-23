@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 import { crx, defineManifest } from "@crxjs/vite-plugin";
 
 import pkg from "./package.json";
+import { BRAND } from "./src/lib/brand";
 
 const root = resolve(__dirname, "src");
 const pagesDir = resolve(root, "pages");
@@ -13,15 +14,13 @@ const componentsDir = resolve(root, "components");
 const browser = process.env.BROWSER || "chrome";
 const isFirefox = browser === "firefox";
 
-const DESCRIPTION =
-  "Copy and paste text without formatting, or as clean HTML or Markdown, from a keyboard shortcut or the context menu.";
-
 export default defineConfig(({ mode }) => {
   const manifest = defineManifest({
     manifest_version: 3,
     version: pkg.version,
-    name: mode === "development" ? "[Dev] Better Copy Paste" : "Better Copy Paste",
-    description: DESCRIPTION,
+    name: mode === "development" ? `[Dev] ${BRAND.name}` : BRAND.name,
+    description: BRAND.description,
+    homepage_url: BRAND.homepage,
     options_ui: {
       page: "src/pages/options/index.html",
       open_in_tab: true,
@@ -33,12 +32,18 @@ export default defineConfig(({ mode }) => {
       : { service_worker: "src/pages/background/background.ts", type: "module" as const },
     action: {
       default_popup: "src/pages/popup/index.html",
-      default_title: "Better Copy Paste",
+      default_title: BRAND.name,
       default_icon: {
+        "16": "icon-16.png",
         "32": "icon-32.png",
+        "48": "icon-48.png",
+        "128": "icon-128.png",
       },
     },
     icons: {
+      "16": "icon-16.png",
+      "32": "icon-32.png",
+      "48": "icon-48.png",
       "128": "icon-128.png",
     },
     // No host_permissions: every entry point (toolbar action, context menu,
@@ -80,7 +85,7 @@ export default defineConfig(({ mode }) => {
     ...(isFirefox && {
       browser_specific_settings: {
         gecko: {
-          id: "better-copy-paste@example.com",
+          id: BRAND.geckoId,
           strict_min_version: "115.0",
           data_collection_permissions: {
             required: ["none"],

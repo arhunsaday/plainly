@@ -2,6 +2,7 @@ import Browser from "webextension-polyfill";
 import { showToast } from "./inject/toast";
 import { runInFrame } from "./inject-runner";
 import type { ActionOutcome } from "./messages";
+import { BRAND } from "./brand";
 import type { Settings } from "./settings";
 
 type ActionApi = {
@@ -11,7 +12,7 @@ type ActionApi = {
   setTitle: (details: { title: string }) => Promise<void>;
 };
 
-const DEFAULT_TITLE = "Better Copy Paste";
+const DEFAULT_TITLE = BRAND.name;
 
 function actionApi(): ActionApi {
   const api = Browser as unknown as { action?: ActionApi; browserAction?: ActionApi };

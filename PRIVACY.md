@@ -1,51 +1,62 @@
-# Privacy policy
+# Privacy policy — Plainly
 
-**Better Copy Paste collects no data, and transmits none.**
+*Last updated: 2026-09-23*
 
-Last updated: 8 September 2026
+**Plainly collects nothing and transmits nothing.** No analytics, no telemetry,
+no accounts, no identifiers, no network requests of any kind. There is no
+server; there is nothing to collect it with.
 
-## What the extension does with your data
+## What the extension touches, and when
 
-| Data | What happens to it |
+Plainly does one thing: it converts the text you selected, or the text on your
+clipboard, and hands the result back.
+
+It has **no host permissions**. It cannot read any page until you invoke it —
+with its keyboard shortcut, its right-click entry, or its toolbar button — and
+then only the tab you invoked it on, for that one action. It never reads any
+other tab, and it registers no persistent content scripts.
+
+When you invoke an action, it runs a short function in that tab to read your
+selection (or to insert text at your caret), converts the result inside the
+extension, and writes it to your clipboard. Everything happens on your device,
+in memory, and is discarded when the action finishes.
+
+## What is stored
+
+Your settings, and only your settings, in the browser's extension storage:
+which formatting survives a clean copy, your Markdown style, which right-click
+entries you want, and how you want to be notified. They sync through your
+browser profile if you are signed in to it, exactly as your browser's own
+settings do.
+
+**Nothing you copy or paste is ever stored.** There is no clipboard history and
+no log of what you converted.
+
+Uninstalling removes the settings.
+
+## Permissions, and why each one exists
+
+| Permission | Why |
 | --- | --- |
-| The text you select | Read only when you invoke an action, converted in memory, written to your clipboard, then discarded |
-| Your clipboard contents | Read only when you invoke *Paste without formatting*, inserted at your caret, then discarded |
-| Your settings | Stored with the browser's own `storage.sync`, so they follow your signed-in browser profile |
+| `activeTab` | Read your selection, and insert text at your caret, in the tab you invoked the extension on. Granted by that gesture, for that tab only. |
+| `scripting` | Run the selection-reading and text-insertion routines in that tab. No persistent content scripts are registered. |
+| `contextMenus` | Add the four entries to the right-click menu. |
+| `clipboardRead` | "Paste without formatting" reads the clipboard so it can strip formatting before inserting. |
+| `clipboardWrite` | The three copy actions place their result on the clipboard. |
+| `storage` | Your settings, above. |
+| `offscreen` (Chrome only) | A Manifest V3 service worker has no document, and clipboard access needs one. Creates a hidden, empty extension document used only for clipboard access and HTML-to-Markdown conversion. It loads no remote content. |
 
-Nothing is written to a server. The extension makes no network requests of any
-kind, contains no analytics, no telemetry, no crash reporting, no advertising and
-no third-party SDKs. There is no account, and nothing to sign in to.
+**Host permissions:** none requested.
+**Remote code:** none. Everything that executes ships inside the package.
 
-## Access to web pages
+## Links
 
-The extension requests **no host permissions**. It cannot read a page until you
-act on it. Clicking its toolbar button, choosing one of its right-click entries,
-or pressing one of its keyboard shortcuts grants
-[`activeTab`](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab)
-— access to that one tab, for that one invocation. Access lapses immediately
-afterwards, and no other tab is ever readable.
-
-## Your settings
-
-Settings are the only thing the extension stores. If you have browser sync
-enabled, your browser — not this extension — syncs them across your devices
-through your browser account, under your browser vendor's privacy policy.
-
-Removing the extension removes its settings.
-
-## Permissions, and why each is needed
-
-- `activeTab` — read the selection, or insert text, in the tab you invoked the action on.
-- `scripting` — run that read/insert code in that tab.
-- `contextMenus` — add the right-click entries.
-- `clipboardRead` — read the clipboard for *Paste without formatting*.
-- `clipboardWrite` — place the converted result on the clipboard.
-- `storage` — save your settings.
-- `offscreen` (Chrome only) — Chrome's service workers have no document, and
-  clipboard access requires one. This permission creates a hidden, empty
-  extension document used solely for clipboard access and HTML-to-Markdown
-  conversion. It loads no remote content.
+With "Remove tracking parameters from links" on — the default — campaign and
+click identifiers (`utm_*`, `gclid`, `fbclid`, and the like) are removed from
+URLs in what you copy. This happens entirely on your device. No URL is
+resolved, fetched, or sent anywhere.
 
 ## Contact
 
-Please raise an issue in the project's repository.
+Open an issue at
+<https://github.com/Jeusto/copy-paste-without-formatting/issues>.

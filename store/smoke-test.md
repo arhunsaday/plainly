@@ -1,4 +1,4 @@
-# Manual smoke test
+# Manual smoke test — Plainly
 
 Automated tests cover the pure logic (`pnpm run test`) and prove the injected
 functions survive bundling (`pnpm run check:injected`). What they cannot cover is
@@ -75,3 +75,25 @@ Load `dist/` at `chrome://extensions` (Developer mode → Load unpacked), and
 Re-run 1, 2, 3, 9, 10, 12 and 13 in Firefox. Clipboard access there runs in the
 background page rather than an offscreen document, so it is a genuinely
 different code path.
+
+## Links and text hygiene
+
+| # | Steps | Expected |
+| --- | --- | --- |
+| L1 | Copy a paragraph containing `https://example.com/a?utm_source=news&id=42` | The pasted link reads `https://example.com/a?id=42` |
+| L2 | Copy a YouTube share link (`https://youtu.be/ID?si=…&t=90`) | `si` is gone; `t=90` survives, so the timestamp still works |
+| L3 | *Copy with clean formatting* over a link with `?gclid=…`, paste into a rich editor | The pasted link's target has no `gclid` |
+| L4 | *Copy as Markdown* over the same selection | The Markdown target is clean too |
+| L5 | Turn **Remove tracking parameters** off, repeat L1 | The parameter survives |
+| L6 | Copy two paragraphs from a PDF with **Rejoin hard-wrapped lines** on and **Collapse line breaks** off | Lines broken mid-sentence are rejoined; sentence ends and paragraph breaks are not |
+| L7 | Copy text with curly quotes with **Straighten typographic characters** on | `"` and `'` are ASCII; em and en dashes are unchanged |
+
+## Branding and store readiness
+
+| # | Steps | Expected |
+| --- | --- | --- |
+| B1 | Look at the toolbar | The Plainly mark, not a placeholder or a stock clipboard |
+| B2 | Open the popup | Header reads "Plainly", version matches `package.json`, assigned shortcuts show as chips |
+| B3 | Open the options page | Sticky header, switches respond instantly, the before/after preview updates as you toggle |
+| B4 | Switch the OS to dark mode, reopen both | Both follow, with no unreadable text |
+| B5 | Trigger an error on a page that can be scripted | The on-page toast matches the extension's palette, not raw red/green |

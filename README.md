@@ -1,9 +1,15 @@
-# Better Copy Paste
+<div align="center">
+  <img src="brand/logo.svg" width="72" height="72" alt="">
+  <h1>Plainly</h1>
+  <p><strong>Copy and paste without the mess.</strong><br>
+  Plain text, clean HTML or Markdown — from a keyboard shortcut.</p>
+</div>
 
-A Chrome and Firefox extension for getting text out of one app and into another
-without dragging its styling along.
+---
 
-Four actions, from a keyboard shortcut, the right-click menu, or the toolbar popup:
+Plainly gets text out of one app and into another without dragging its styling
+along. Four actions, from a keyboard shortcut, the right-click menu, or the
+toolbar popup:
 
 | Action | What lands on the clipboard |
 | --- | --- |
@@ -12,7 +18,25 @@ Four actions, from a keyboard shortcut, the right-click menu, or the toolbar pop
 | **Copy as Markdown** | The selection converted to Markdown |
 | **Paste without formatting** | The clipboard inserted as plain text at the caret |
 
+Plus, on every one of them: **tracking parameters are stripped from links.**
+`?utm_source=newsletter&gclid=…` never makes it into your document.
+
+## Why it works where others do not
+
+Google Docs and Word Online express bold and italic through CSS rather than
+real HTML tags, so tools that only read the markup lose your emphasis. Plainly
+reads the formatting the way the browser renders it, which is why *clean
+formatting* and *Markdown* keep working on editors that defeat simpler
+extensions.
+
+It also handles the awkward cases: text selected inside form fields, content in
+iframes, custom elements built on shadow DOM, and React or Vue editors that
+ignore programmatic text insertion.
+
 ## Install
+
+**Chrome, Edge, Brave, Arc** — [Chrome Web Store](https://chrome.google.com/webstore/) *(pending first submission)*
+**Firefox** — [Firefox Add-ons](https://addons.mozilla.org/) *(pending first submission)*
 
 ### From source
 
@@ -22,15 +46,13 @@ pnpm run build:chrome     # -> dist/
 pnpm run build:firefox    # -> dist-firefox/
 ```
 
-- **Chrome / Edge / Brave** — open `chrome://extensions`, enable Developer mode,
-  choose *Load unpacked*, and select `dist/`.
-- **Firefox** — open `about:debugging#/runtime/this-firefox`, choose
-  *Load Temporary Add-on*, and select any file inside `dist-firefox/`.
+- **Chrome / Edge / Brave** — `chrome://extensions`, enable Developer mode, *Load unpacked*, select `dist/`.
+- **Firefox** — `about:debugging#/runtime/this-firefox`, *Load Temporary Add-on*, select any file inside `dist-firefox/`.
 
 ### Packaged
 
 ```bash
-pnpm run package:all      # -> releases/better-copy-paste-{chrome,firefox}-v<version>.{zip,xpi}
+pnpm run package:all      # -> releases/plainly-{chrome,firefox}-v<version>.zip
 ```
 
 ## Default shortcuts
@@ -39,119 +61,86 @@ pnpm run package:all      # -> releases/better-copy-paste-{chrome,firefox}-v<ver
 | --- | --- | --- |
 | Copy without formatting | `⌘⇧Y` | `Ctrl+Shift+Y` |
 | Paste without formatting | `⌘⇧V` | `Ctrl+Shift+V` |
+| Copy with clean formatting | unassigned | unassigned |
+| Copy as Markdown | unassigned | unassigned |
 
-*Copy with clean formatting* and *Copy as Markdown* ship unbound, because
-browsers cap how many shortcuts an extension may suggest. Assign them from the
-options page, or at `chrome://extensions/shortcuts`.
+Browsers cap how many shortcuts an extension may suggest, so the last two are
+left for you to assign. The popup and the options page both link straight to
+the browser's shortcut editor.
 
 ## Settings
 
-The options page controls:
+Everything is in the options page, and saves as you change it.
 
-- **Plain text** — whether line breaks collapse into spaces (on by default, which
-  is what makes a multi-line selection paste cleanly into a search box), whether
-  runs of spaces collapse, and whether the result is trimmed. A live preview
-  shows the effect.
-- **Clean formatting** — which semantic features survive: emphasis, headings,
-  lists, links, tables, code, images. Fonts, colours, sizes, backgrounds and
-  classes are always discarded.
-- **Markdown style** — bullet marker, heading style, code-block style, emphasis
-  delimiter.
+- **Plain text** — collapse line breaks, collapse spaces, trim, rejoin
+  hard-wrapped lines (PDFs, plain-text email), straighten typographic
+  characters. A live before/after preview shows the combined effect.
+- **Links** — remove tracking parameters. On by default.
+- **Clean formatting** — choose what survives: emphasis, headings, lists,
+  links, tables, code, images.
+- **Markdown style** — bullet marker, heading style, code fences, emphasis.
 - **Context menu** — which of the four entries appear on right-click.
-- **Feedback** — the toolbar badge tick/cross, and whether on-page messages
-  appear for every action, errors only, or never.
+- **Feedback** — toolbar badge, and whether on-page messages appear always, on
+  errors only, or never.
 
-## Permissions
+## Privacy
 
-The extension requests no host permissions, so it never asks to "read and change
-all your data on all websites".
-
-Every entry point — clicking the toolbar action, choosing a context-menu item,
-pressing a keyboard shortcut — is a gesture that grants
-[`activeTab`](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab)
-for the current tab only, for that one invocation.
-
-| Permission | Why |
-| --- | --- |
-| `activeTab` | Read the selection, or insert text, in the tab you invoked the action on |
-| `scripting` | Run the read/insert code in that tab |
-| `contextMenus` | Add the right-click entries |
-| `clipboardRead` | Read the clipboard for *Paste without formatting* |
-| `clipboardWrite` | Put the result on the clipboard for the copy actions |
-| `storage` | Save your settings |
-| `offscreen` | Chrome only — see below |
-
-Nothing is collected and nothing is transmitted. See [PRIVACY.md](PRIVACY.md).
-
-## How it works
-
-Three details are worth knowing before changing anything.
-
-### Injected functions must be self-contained
-
-`chrome.scripting.executeScript({ func })` ships a function to the page by
-calling `Function.prototype.toString()` on it. Anything it closes over — an
-import, a module constant, a neighbouring helper — is **not** serialised, so the
-injected copy throws a `ReferenceError` in the page while the extension's own
-bundle stays perfectly valid. Neither TypeScript nor ESLint catches this.
-
-Everything in `src/lib/inject/` therefore declares its helpers inside the
-exported function and touches nothing but its own arguments and web globals.
-`pnpm run check:injected` parses the *built* bundles and fails if any of those
-functions references a name it does not declare.
-
-### Formatting is read from computed styles, in the page
-
-Sites like Google Docs and Word Online express bold and italic through CSS, not
-through `<b>` and `<i>`. Those styles only exist on live nodes: `getComputedStyle`
-on a detached `range.cloneContents()` clone returns defaults, so a
-clone-then-inspect approach silently loses all emphasis. `readSelection` walks
-the live tree instead and consults computed styles as it goes.
-
-### Clipboard work happens in a document, not the worker
-
-A Chrome service worker has no DOM, and `navigator.clipboard` needs a focused
-one. Clipboard reads/writes and Turndown's HTML parsing run in an
-[offscreen document](https://developer.chrome.com/docs/extensions/reference/api/offscreen);
-Firefox's MV3 background scripts still run inside a document, so there they run
-directly and the `offscreen` permission is omitted from that manifest.
-
-### Layout
-
-```
-src/
-  lib/
-    actions.ts          orchestrates the four actions
-    settings.ts         Settings type + defaults (pure — safe to import anywhere)
-    settings-store.ts   storage.sync persistence
-    plain-text.ts       plain-text normalisation
-    clipboard-dom.ts    clipboard + Turndown primitives (needs a document)
-    dom-context.ts      routes to offscreen document / background page
-    inject-runner.ts    executeScript wrappers, all-frames and single-frame
-    inject/             functions that run in the page — self-contained
-  pages/
-    background/         service worker: menus, commands, messages
-    offscreen/          Chrome's clipboard/Markdown document
-    popup/              toolbar popup
-    options/            settings page
-```
+No accounts, no analytics, no telemetry, no network requests of any kind. Your
+selection and your clipboard are converted on your own machine and never leave
+it. The extension requests **no host permissions**: it can read a tab only at
+the moment you invoke it, and never any other tab. See [PRIVACY.md](PRIVACY.md).
 
 ## Development
 
+Node 20+, pnpm.
+
 ```bash
-pnpm run dev              # Chrome, hot reload
-pnpm run dev:firefox      # Firefox
-pnpm run verify           # typecheck + lint + test + build both + check:injected
-pnpm run test:watch
+pnpm install
+pnpm run dev              # Chrome, with HMR
+pnpm run dev:firefox
+pnpm test                 # 63 tests
+pnpm run brand            # regenerate icons — output is committed
+pnpm run verify           # typecheck, lint, test, build both, check injected
 ```
 
-`pnpm run verify` is what CI runs.
+### The injected-function invariant
 
-## Browser support
+`chrome.scripting.executeScript({ func })` serialises a function with
+`Function.prototype.toString()`. Anything it closes over — an import, a
+module-level constant, a helper next to it — is **not** serialised, so the
+injected copy throws in the page while the bundle stays perfectly valid.
+Nothing in TypeScript or eslint catches this.
 
-- Chrome, Edge, Brave and other Chromium browsers on Manifest V3.
-- Firefox 115+.
+`scripts/check-injected.mjs` parses the built bundles, finds each injected
+function after minification, and fails the build if it references a name it
+does not declare itself. It runs in `pnpm run verify` and in CI. If you add an
+injected function, add its marker string to `INJECTED` in that script.
+
+| File | Responsibility |
+| --- | --- |
+| [src/lib/actions.ts](src/lib/actions.ts) | Orchestrates each action end to end |
+| [src/lib/plain-text.ts](src/lib/plain-text.ts) | Plain-text normalisation, rewrapping, typography |
+| [src/lib/urls.ts](src/lib/urls.ts) | Tracking-parameter removal |
+| [src/lib/inject/](src/lib/inject/) | The self-contained functions that run in the page |
+| [src/lib/dom-context.ts](src/lib/dom-context.ts) | Clipboard and Markdown work, via offscreen document or background page |
+| [src/lib/brand.ts](src/lib/brand.ts) | Name, tagline, add-on id — the only place they appear |
+| [scripts/brand.mjs](scripts/brand.mjs) | Brand geometry → the committed PNG icons |
+
+## Releasing
+
+Tag it; CI does the rest.
+
+```bash
+pnpm version minor
+git push --follow-tags
+```
+
+`.github/workflows/release.yml` verifies the tag against `package.json`, runs
+the full verify gate, packages, publishes to both stores and opens a GitHub
+Release. Publishing steps skip themselves when their secrets are absent.
+See [store/DEPLOY.md](store/DEPLOY.md) for the credentials and
+[store/listing.md](store/listing.md) for the listing copy.
 
 ## Licence
 
-[MIT](LICENSE)
+MIT — see [LICENSE](LICENSE).
