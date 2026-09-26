@@ -1,15 +1,15 @@
 // Generates every raster brand asset from the geometry below, so the icons in
 // the extension and the ones in the store listing can never drift apart.
 // Run with `pnpm run brand`. Output is committed.
-import { mkdir, writeFile } from 'node:fs/promises';
-import { createCanvas, encodePng } from './raster.mjs';
+import { mkdir, writeFile } from "node:fs/promises";
+import { createCanvas, encodePng } from "./raster.mjs";
 
 export const BRAND = {
-  name: 'Plainly',
-  tagline: 'Copy and paste without the mess',
-  ink: '#16161A',
-  accent: '#4F46E5',
-  light: '#FFFFFFED'
+  name: "Plainly — copy and paste without the mess",
+  tagline: "Copy and paste without the mess",
+  ink: "#16161A",
+  accent: "#4F46E5",
+  light: "#FFFFFFED",
 };
 
 /**
@@ -25,9 +25,10 @@ function drawMark(canvas) {
   const rows = [
     [s * 0.297, s * 0.594, BRAND.light],
     [s * 0.453, s * 0.469, BRAND.light],
-    [s * 0.609, s * 0.297, BRAND.accent]
+    [s * 0.609, s * 0.297, BRAND.accent],
   ];
-  for (const [y, width, color] of rows) canvas.roundRect(x, y, width, h, h / 2, color);
+  for (const [y, width, color] of rows)
+    canvas.roundRect(x, y, width, h, h / 2, color);
   return canvas;
 }
 
@@ -47,8 +48,11 @@ export const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12
 
 const SIZES = [16, 32, 48, 128];
 
-await mkdir('public', { recursive: true });
-await mkdir('brand', { recursive: true });
-for (const size of SIZES) await writeFile(`public/icon-${size}.png`, icon(size));
-await writeFile('brand/logo.svg', LOGO_SVG);
-console.log(`Brand assets: ${SIZES.map(s => `icon-${s}.png`).join(', ')} + brand/logo.svg`);
+await mkdir("public", { recursive: true });
+await mkdir("brand", { recursive: true });
+for (const size of SIZES)
+  await writeFile(`public/icon-${size}.png`, icon(size));
+await writeFile("brand/logo.svg", LOGO_SVG);
+console.log(
+  `Brand assets: ${SIZES.map((s) => `icon-${s}.png`).join(", ")} + brand/logo.svg`,
+);
