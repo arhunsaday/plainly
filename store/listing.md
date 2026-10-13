@@ -95,26 +95,108 @@ invoke it, and never any other tab.
 
 ---
 
-## Permission justifications
+## Chrome Web Store — Privacy practices
 
-The Chrome Web Store requires a justification per permission.
+Paste each block into the matching field on the Privacy tab. Every field caps at
+1,000 characters; each block below is well inside that. Plainly declares no host
+permissions and no content scripts, so there is no host-permission field to fill.
 
-| Permission | Justification |
-| --- | --- |
-| `activeTab` | Required to read the user's current text selection, and to insert text at the caret, in the tab where the user invoked the extension. Access is granted only by that user gesture and only for that tab. |
-| `scripting` | Required to execute the selection-reading and text-insertion routines in the page the user invoked the extension on. No persistent content scripts are registered. |
-| `contextMenus` | Required to add the extension's four copy/paste entries to the right-click menu. |
-| `clipboardRead` | Required by the "Paste without formatting" feature, which reads the clipboard so it can strip formatting before inserting the text. |
-| `clipboardWrite` | Required by the three copy features, which place the converted plain text, cleaned HTML, or Markdown on the clipboard. |
-| `storage` | Required to persist the user's own settings. No browsing data or page content is stored. |
-| `offscreen` | Required because a Manifest V3 service worker has no document and clipboard access needs one. Creates a hidden, empty extension document used only for clipboard access and HTML-to-Markdown conversion. It loads no remote content. |
+### Single purpose description
 
-**Host permissions:** none requested.
+> Plainly removes formatting from text as you copy or paste it. The user selects
+> text and invokes one of four actions — copy as plain text, copy keeping only
+> semantic formatting, copy as Markdown, or paste the clipboard as plain text.
+> The extension converts the text and either puts the result on the clipboard or
+> inserts it at the caret. That is its only function.
 
-**Remote code:** none. All code is bundled in the package; nothing is fetched
-or evaluated at runtime.
+### activeTab justification
 
-**Single purpose:** converting copied or pasted text to a cleaner form.
+> The three copy actions read the user's current text selection; the paste
+> action inserts text at the caret. Both happen in the tab the user invoked the
+> extension on.
+>
+> activeTab is the narrowest way to do this. It grants access to one tab, only
+> in response to the user's own gesture — clicking the toolbar button, choosing
+> one of the extension's right-click entries, or pressing its keyboard shortcut
+> — and only for that invocation. The extension requests no host permissions and
+> registers no content scripts, so it has no access to any page until the user
+> asks for one, and never to any other tab.
+
+### contextMenus justification
+
+> Adds the extension's four actions to the right-click menu: Copy without
+> formatting, Copy with clean formatting, Copy as Markdown, and Paste without
+> formatting. The copy entries appear only on a text selection, and the paste
+> entry only in an editable field. Each can be turned off individually in the
+> extension's settings. No other menu entries are created.
+
+### clipboardRead justification
+
+> Required by one feature: "Paste without formatting". To strip formatting from
+> what the user is pasting, the extension has to read what is on the clipboard
+> before inserting it.
+>
+> The clipboard is read only at the moment the user invokes that one action —
+> never in the background, never on page load, and never for any other action.
+> The text is converted in memory and inserted at the caret. It is not stored,
+> logged, or kept in any history, and it is not transmitted anywhere: the
+> extension makes no network requests of any kind.
+
+### clipboardWrite justification
+
+> Required by the three copy actions. Each converts the user's selection — to
+> plain text, to semantic HTML only, or to Markdown — and writes the result to
+> the clipboard, which is the whole purpose of the action. The clipboard is
+> written only when the user invokes one of these actions.
+
+### scripting justification
+
+> activeTab grants permission to access the invoked tab; scripting is the API
+> that acts on it. Both are needed.
+>
+> The extension uses scripting.executeScript to run two short functions in that
+> tab: one reads the user's selection — including inside form fields, iframes
+> and shadow DOM, which a plain selection read misses — and one inserts text at
+> the caret. No content scripts are registered, in the manifest or at runtime,
+> so nothing runs on any page until the user invokes an action, and these
+> functions run only in the tab activeTab has granted.
+
+### storage justification
+
+> Stores the user's own settings: which formatting survives a clean copy, their
+> Markdown style preferences, which right-click entries to show, and how they
+> want to be notified. Nothing else is written. No page content, no clipboard
+> content, no browsing data and no identifiers are stored — there is no
+> clipboard history — and nothing is transmitted anywhere.
+
+### offscreen justification
+
+> A Manifest V3 service worker has no DOM, and both core operations need one:
+> clipboard access, and converting HTML to Markdown using DOM APIs.
+>
+> The extension creates a single hidden, empty extension document for this. It
+> ships inside the package, loads no remote content, and does nothing but
+> convert text the user has asked to convert. It is created on demand and is the
+> standard Chrome mechanism for giving a service worker a document. The Firefox
+> build does not request this permission, because MV3 background scripts there
+> already run in a document.
+
+### Remote code
+
+Select **No, I am not using Remote code.** If a justification is required:
+
+> All JavaScript executes from files inside the extension package. There are no
+> script tags pointing at external files, no modules loaded from a remote
+> origin, and no eval() or new Function(). The extension makes no network
+> requests of any kind; every conversion happens locally on the user's machine.
+
+### What a reviewer can check quickly
+
+- No `host_permissions`, no `content_scripts`, no `web_accessible_resources` in the manifest.
+- No `eval` or `new Function` anywhere in the built bundle.
+- The only `https://` strings in the build are XML namespaces, the homepage link, and sample text on the options page — nothing is fetched.
+- Storage holds only the keys in `DEFAULT_SETTINGS`.
+- Full source: <https://github.com/Jeusto/copy-paste-without-formatting>
 
 ## Data-use disclosures
 
